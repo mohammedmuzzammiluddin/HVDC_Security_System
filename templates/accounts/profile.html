@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<h1 class="page-title"><i class="fas fa-user-circle me-2 text-cyan"></i>My Profile</h1>
+<div class="card p-4" style="max-width: 600px;">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="mb-3">
+      <label class="form-label text-secondary small">{{ field.label }}</label>
+      {{ field }}
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-cyber px-4">Save Changes</button>
+  </form>
+</div>
+{% endblock %}

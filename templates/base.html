@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}HVDC CyberSec{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body class="bg-dark-blue">
+
+{% if user.is_authenticated %}
+<div class="d-flex">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar d-flex flex-column p-3" style="width:260px; min-height:100vh; background:#0d1b2a; position:fixed; top:0; left:0; z-index:100; overflow-y:auto;">
+    <div class="sidebar-brand mb-4 pt-2">
+      <i class="fas fa-bolt text-cyan me-2"></i>
+      <span class="fw-bold text-white fs-5">HVDC CyberSec</span>
+    </div>
+
+    <ul class="nav flex-column gap-1">
+      <li><a href="{% url 'dashboard:home' %}" class="nav-link text-light {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+      <li><a href="{% url 'monitoring:dashboard' %}" class="nav-link text-light {% if request.resolver_match.app_name == 'monitoring' %}active{% endif %}"><i class="fas fa-wave-square me-2"></i>Monitoring</a></li>
+      <li><a href="{% url 'threat_detection:dashboard' %}" class="nav-link text-light {% if request.resolver_match.app_name == 'threat_detection' %}active{% endif %}"><i class="fas fa-shield-alt me-2"></i>Threat Detection</a></li>
+      <li><a href="{% url 'reports:list' %}" class="nav-link text-light {% if request.resolver_match.app_name == 'reports' %}active{% endif %}"><i class="fas fa-file-alt me-2"></i>Reports</a></li>
+      <li><a href="{% url 'simulation:scenarios' %}" class="nav-link text-light {% if request.resolver_match.app_name == 'simulation' %}active{% endif %}"><i class="fas fa-flask me-2"></i>Simulation</a></li>
+      <li><a href="{% url 'alerts:list' %}" class="nav-link text-light {% if request.resolver_match.app_name == 'alerts' %}active{% endif %}"><i class="fas fa-bell me-2"></i>Alerts</a></li>
+      <li><a href="{% url 'vulnerability:list' %}" class="nav-link text-light {% if request.resolver_match.app_name == 'vulnerability' %}active{% endif %}"><i class="fas fa-bug me-2"></i>Vulnerability</a></li>
+      <li><a href="{% url 'defense:dashboard' %}" class="nav-link text-light {% if request.resolver_match.app_name == 'defense' %}active{% endif %}"><i class="fas fa-lock me-2"></i>Defense</a></li>
+      {% if user.is_admin %}
+      <li><a href="{% url 'accounts:user_list' %}" class="nav-link text-light"><i class="fas fa-users me-2"></i>Users</a></li>
+      {% endif %}
+    </ul>
+
+    <div class="mt-auto pt-3 border-top border-secondary">
+      <a href="{% url 'accounts:profile' %}" class="nav-link text-light mb-1">
+        <i class="fas fa-user-circle me-2"></i>{{ user.get_full_name|default:user.username }}
+      </a>
+      <a href="{% url 'accounts:logout' %}" class="nav-link text-danger">
+        <i class="fas fa-sign-out-alt me-2"></i>Logout
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-grow-1 p-4" style="margin-left:260px; min-height:100vh;">
+    {% for msg in messages %}
+      <div class="alert alert-{{ msg.tags }} alert-dismissible fade show">
+        {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+
+</div>
+{% else %}
+  <div class="page-wrapper">
+    {% block content_unauth %}{% endblock %}
+  </div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

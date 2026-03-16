@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="page-title mb-0">
+      <i class="fas fa-tachometer-alt me-2 text-cyan"></i>Security Dashboard
+    </h1>
+    <p class="text-secondary small mb-0 mt-1">
+      Welcome, {{ request.user.get_full_name|default:request.user.username }} &mdash;
+      <span class="badge bg-secondary">{{ request.user.get_role_display }}</span>
+    </p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'monitoring:dashboard' %}" class="btn btn-cyber btn-sm">
+      <i class="fas fa-wave-square me-1"></i>Live Monitor
+    </a>
+    <a href="{% url 'alerts:list' %}" class="btn btn-outline-warning btn-sm">
+      <i class="fas fa-bell me-1"></i>Alerts
+      {% if active_alerts > 0 %}
+        <span class="badge bg-danger ms-1">{{ active_alerts }}</span>
+      {% endif %}
+    </a>
+  </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="stat-card" style="border-left:3px solid #e74c3c;">
+      <p class="text-secondary small mb-1">Threats Today</p>
+      <h2 class="fw-bold {% if threats_24h > 0 %}text-danger{% else %}text-success{% endif %}">{{ threats_24h }}</h2>
+      <small class="text-secondary">Last 24 hours</small>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card" style="border-left:3px solid #f59e0b;">
+      <p class="text-secondary small mb-1">Active Alerts</p>
+      <h2 class="fw-bold {% if active_alerts > 0 %}text-warning{% else %}text-success{% endif %}">{{ active_alerts }}</h2>
+      <small class="text-secondary">Unresolved</small>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card" style="border-left:3px solid #00b4d8;">
+      <p class="text-secondary small mb-1">DC Voltage</p>
+      <h2 class="fw-bold text-cyan">
+        {% if latest_reading %}{{ latest_reading.dc_voltage|floatformat:1 }}{% else %}—{% endif %}
+        <small class="text-secondary fs-6">kV</small>
+      </h2>
+      <small class="text-secondary">Latest reading</small>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card" style="border-left:3px solid {% if latest_reading.converter_status == 'normal' %}#27ae60{% else %}#e74c3c{% endif %};">
+      <p class="text-secondary small mb-1">Converter Status</p>
+      <h2 class="fw-bold {% if latest_reading.converter_status == 'normal' %}text-success{% elif latest_reading.converter_status == 'warning' %}text-warning{% else %}text-danger{% endif %}">
+        {% if latest_reading %}{{ latest_reading.converter_status|title }}{% else %}—{% endif %}
+      </h2>
+      <small class="text-secondary">Real-time</small>
+    </div>
+  </div>
+</div>
+
+<!-- Threat Type Summary -->
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header"><span class="text-white fw-semibold">Attack Type Summary (Last 24h)</span></div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="d-flex align-items-center gap-3 p-3 rounded" style="background:#1a0d0d;">
+              <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:44px;height:44px;background:rgba(192,57,43,0.2);">
+                <i class="fas fa-tint text-danger"></i>
+              </div>
+              <div>
+                <div class="text-white fw-semibold">Denial of Service</div>
+                <div class="text-danger fw-bold fs-4">{{ threat_counts.dos }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="d-flex align-items-center gap-3 p-3 rounded" style="background:#1a130d;">
+              <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:44px;height:44px;background:rgba(211,84,0,0.2);">
+                <i class="fas fa-database text-warning"></i>
+              </div>
+              <div>
+                <div class="text-white fw-semibold">False Data Injection</div>
+                <div class="text-warning fw-bold fs-4">{{ threat_counts.fdi }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="d-flex align-items-center gap-3 p-3 rounded" style="background:#120d1a;">
+              <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:44px;height:44px;background:rgba(142,68,173,0.2);">
+                <i class="fas fa-terminal" style="color:#a855f7;"></i>
+              </div>
+              <div>
+                <div class="text-white fw-semibold">Command Manipulation</div>
+                <div class="fw-bold fs-4" style="color:#a855f7;">{{ threat_counts.cmd }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Row -->
+<div class="row g-3">
+
+  <!-- Recent Threats -->
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="text-white fw-semibold">Recent Detected Threats</span>
+        <a href="{% url 'threat_detection:dashboard' %}" class="text-cyan small text-decoration-none">View all →</a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-dark-custom table-hover mb-0">
+          <thead><tr><th>Type</th><th>Severity</th><th>Confidence</th><th>Detected</th></tr></thead>
+          <tbody>
+            {% for t in recent_threats %}
+            <tr>
+              <td>
+                <span class="badge" style="background:{% if t.attack_type == 'dos' %}#c0392b{% elif t.attack_type == 'fdi' %}#d35400{% elif t.attack_type == 'cmd_manip' %}#8e44ad{% else %}#27ae60{% endif %}; font-size:0.72rem;">
+                  {{ t.get_attack_type_display }}
+                </span>
+              </td>
+              <td><span class="severity-{{ t.severity }}" style="font-size:0.78rem;">{{ t.severity|upper }}</span></td>
+              <td><small class="text-cyan">{{ t.confidence_score|floatformat:2 }}</small></td>
+              <td><small class="text-secondary">{{ t.detected_at|date:"M d, H:i" }}</small></td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center py-4">
+                <i class="fas fa-check-circle text-success me-2"></i>
+                <span class="text-secondary">No threats detected — system is secure.</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- My Alerts + Quick Links -->
+  <div class="col-md-5">
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="text-white fw-semibold">My Active Alerts</span>
+        <a href="{% url 'alerts:list' %}" class="text-cyan small text-decoration-none">All alerts →</a>
+      </div>
+      <div class="card-body p-0">
+        {% for a in my_alerts %}
+        <div class="d-flex align-items-start gap-2 p-3 border-bottom border-secondary">
+          <span class="badge mt-1 {% if a.severity == 'critical' %}bg-danger{% elif a.severity == 'warning' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}" style="font-size:0.65rem; min-width:60px; text-align:center;">
+            {{ a.severity|upper }}
+          </span>
+          <div>
+            <div class="text-white small fw-semibold">{{ a.title }}</div>
+            <div class="text-secondary" style="font-size:0.75rem;">{{ a.created_at|date:"M d, H:i" }}</div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-3">
+          <i class="fas fa-check-circle text-success"></i>
+          <p class="text-secondary small mb-0 mt-1">No active alerts</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Quick Navigation -->
+    <div class="card">
+      <div class="card-header"><span class="text-white fw-semibold">Quick Navigation</span></div>
+      <div class="card-body d-flex flex-column gap-2">
+        <a href="{% url 'monitoring:dashboard' %}" class="btn btn-outline-light text-start btn-sm py-2">
+          <i class="fas fa-wave-square me-2 text-cyan"></i>HVDC Monitoring
+        </a>
+        <a href="{% url 'threat_detection:dashboard' %}" class="btn btn-outline-light text-start btn-sm py-2">
+          <i class="fas fa-shield-alt me-2 text-danger"></i>Threat Detection
+        </a>
+        <a href="{% url 'reports:list' %}" class="btn btn-outline-light text-start btn-sm py-2">
+          <i class="fas fa-file-alt me-2 text-warning"></i>Reports & Analysis
+        </a>
+        <a href="{% url 'simulation:scenarios' %}" class="btn btn-outline-light text-start btn-sm py-2">
+          <i class="fas fa-flask me-2" style="color:#a855f7;"></i>Attack Simulation
+        </a>
+        <a href="{% url 'alerts:preferences' %}" class="btn btn-outline-light text-start btn-sm py-2">
+          <i class="fas fa-cog me-2 text-secondary"></i>Notification Preferences
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

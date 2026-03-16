@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}Threat Detection{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="page-title mb-0"><i class="fas fa-shield-alt me-2 text-cyan"></i>Threat Detection</h1>
+  <a href="{% url 'threat_detection:run_detection' %}" class="btn btn-cyber">
+    <i class="fas fa-search me-2"></i>Run Detection Now
+  </a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-2">
+    <div class="stat-card text-center">
+      <p class="text-secondary small mb-1">Total</p>
+      <h3 class="text-white fw-bold">{{ stats.total }}</h3>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="stat-card text-center">
+      <p class="text-secondary small mb-1">DoS</p>
+      <h3 class="text-danger fw-bold">{{ stats.dos }}</h3>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="stat-card text-center">
+      <p class="text-secondary small mb-1">FDI</p>
+      <h3 class="text-warning fw-bold">{{ stats.fdi }}</h3>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="stat-card text-center">
+      <p class="text-secondary small mb-1">Cmd Manip</p>
+      <h3 style="color:#a855f7" class="fw-bold">{{ stats.cmd }}</h3>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="stat-card text-center">
+      <p class="text-secondary small mb-1">Critical</p>
+      <h3 class="text-danger fw-bold">{{ stats.critical }}</h3>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="text-white fw-semibold">Threat Log</span>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-dark-custom table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Attack Type</th>
+          <th>Severity</th>
+          <th>Confidence</th>
+          <th>Source IP</th>
+          <th>Description</th>
+          <th>Detected At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in threats %}
+        <tr>
+          <td>
+            <span class="badge"
+              style="background:
+                {% if t.attack_type == 'dos' %}#c0392b
+                {% elif t.attack_type == 'fdi' %}#d35400
+                {% elif t.attack_type == 'cmd_manip' %}#8e44ad
+                {% else %}#27ae60{% endif %}">
+              {{ t.get_attack_type_display }}
+            </span>
+          </td>
+          <td><span class="severity-{{ t.severity }}">{{ t.severity|upper }}</span></td>
+          <td>
+            <div class="progress mb-1" style="height:5px; width:80px; background:#1e3a5f;">
+              <div class="progress-bar" style="width:{{ t.confidence_score|floatformat:0 }}0%; background:#00b4d8;"></div>
+            </div>
+            <small class="text-secondary">{{ t.confidence_score|floatformat:2 }}</small>
+          </td>
+          <td class="text-secondary small">{{ t.source_ip|default:"—" }}</td>
+          <td class="text-secondary small" style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+            {{ t.description }}
+          </td>
+          <td class="text-secondary small">{{ t.detected_at|date:"M d, H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-secondary py-4">
+            <i class="fas fa-info-circle me-2"></i>No threats logged yet. Click "Run Detection Now" to start.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

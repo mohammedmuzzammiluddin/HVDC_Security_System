@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="page-title"><i class="fas fa-tachometer-alt me-2 text-cyan"></i>Security Dashboard</h1>
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <p class="text-secondary small mb-1">Threats (24h)</p>
+          <h2 class="fw-bold text-white">{{ total_threats }}</h2>
+        </div>
+        <i class="fas fa-shield-alt fa-2x text-danger"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <p class="text-secondary small mb-1">Active Alerts</p>
+          <h2 class="fw-bold text-white">{{ active_alerts }}</h2>
+        </div>
+        <i class="fas fa-bell fa-2x text-warning"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <p class="text-secondary small mb-1">DC Voltage</p>
+          <h2 class="fw-bold text-white">{% if latest_reading %}{{ latest_reading.dc_voltage|floatformat:1 }} kV{% else %}—{% endif %}</h2>
+        </div>
+        <i class="fas fa-bolt fa-2x text-cyan"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <p class="text-secondary small mb-1">Converter Status</p>
+          <h2 class="fw-bold {% if latest_reading.converter_status == 'normal' %}text-success{% else %}text-danger{% endif %}">
+            {% if latest_reading %}{{ latest_reading.converter_status|title }}{% else %}—{% endif %}
+          </h2>
+        </div>
+        <i class="fas fa-microchip fa-2x text-success"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Threat Type Row -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="stat-card text-center">
+      <p class="text-secondary small mb-1">DoS Attacks</p>
+      <h3 class="text-danger fw-bold">{{ threat_counts.dos }}</h3>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card text-center">
+      <p class="text-secondary small mb-1">False Data Injection</p>
+      <h3 class="text-warning fw-bold">{{ threat_counts.fdi }}</h3>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card text-center">
+      <p class="text-secondary small mb-1">Command Manip.</p>
+      <h3 style="color:#a855f7;" class="fw-bold">{{ threat_counts.cmd }}</h3>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card text-center">
+      <p class="text-secondary small mb-1">Normal Traffic</p>
+      <h3 class="text-success fw-bold">{{ threat_counts.normal }}</h3>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Threats Table -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span class="text-white fw-semibold">Recent Threats</span>
+    <a href="{% url 'threat_detection:dashboard' %}" class="btn btn-cyber btn-sm">View All</a>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-dark-custom table-hover mb-0">
+      <thead><tr><th>Type</th><th>Severity</th><th>Confidence</th><th>Detected At</th></tr></thead>
+      <tbody>
+        {% for t in recent_threats %}
+        <tr>
+          <td><span class="badge badge-{{ t.attack_type }}">{{ t.get_attack_type_display }}</span></td>
+          <td><span class="severity-{{ t.severity }}">{{ t.severity|upper }}</span></td>
+          <td>{{ t.confidence_score|floatformat:2 }}</td>
+          <td class="text-secondary small">{{ t.detected_at|date:"M d, H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-center text-secondary py-3">No threats detected yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

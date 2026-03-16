@@ -1,0 +1,29 @@
+/* HVDC CyberSec - Main Stylesheet */
+body { font-family: 'Inter', sans-serif; background: #0a1628; color: #e0e6f0; }
+.sidebar .nav-link { border-radius: 8px; padding: 10px 14px; transition: all 0.2s; font-size: 0.9rem; }
+.sidebar .nav-link:hover, .sidebar .nav-link.active { background: rgba(0,180,216,0.15); color: #00b4d8 !important; }
+.text-cyan { color: #00b4d8 !important; }
+.bg-dark-blue { background: #0a1628; }
+.card { background: #0d1b2a; border: 1px solid #1e3a5f; border-radius: 12px; }
+.card-header { background: #112240; border-bottom: 1px solid #1e3a5f; }
+.stat-card { background: linear-gradient(135deg, #0d1b2a, #112240); border-radius: 14px; border: 1px solid #1e3a5f; padding: 1.5rem; }
+.stat-card:hover { border-color: #00b4d8; transform: translateY(-2px); transition: all 0.2s; }
+.badge-dos { background: #c0392b; }
+.badge-fdi { background: #e67e22; }
+.badge-cmd { background: #8e44ad; }
+.badge-normal { background: #27ae60; }
+.table-dark-custom { color: #e0e6f0; }
+.table-dark-custom th { background: #112240; color: #00b4d8; border-color: #1e3a5f; }
+.table-dark-custom td { border-color: #1e2d4a; }
+.table-dark-custom tr:hover td { background: rgba(0,180,216,0.05); }
+.btn-cyber { background: linear-gradient(90deg, #00b4d8, #0077b6); color: white; border: none; border-radius: 8px; }
+.btn-cyber:hover { background: linear-gradient(90deg, #0077b6, #00b4d8); color: white; }
+input, select, textarea { background: #112240 !important; border: 1px solid #1e3a5f !important; color: #e0e6f0 !important; border-radius: 8px !important; }
+input:focus, select:focus, textarea:focus { border-color: #00b4d8 !important; box-shadow: 0 0 0 0.2rem rgba(0,180,216,0.25) !important; }
+.severity-critical { color: #e74c3c; font-weight: 600; }
+.severity-high { color: #e67e22; font-weight: 600; }
+.severity-medium { color: #f1c40f; }
+.severity-low { color: #2ecc71; }
+.page-title { font-size: 1.6rem; font-weight: 700; color: #e0e6f0; margin-bottom: 1.5rem; }
+.online-dot { width: 10px; height: 10px; background: #27ae60; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }

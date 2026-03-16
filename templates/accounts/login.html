@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Login — HVDC CyberSec{% endblock %}
+
+{% block content_unauth %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #0a1628 0%, #112240 100%);">
+  <div class="card p-4 shadow-lg" style="width:420px; border:1px solid #1e3a5f; border-radius:16px;">
+    <div class="text-center mb-4">
+      <i class="fas fa-bolt fa-3x text-cyan mb-3"></i>
+      <h3 class="fw-bold text-white">HVDC CyberSec</h3>
+      <p class="text-secondary small">Cyber-Physical Security Platform</p>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label text-secondary small">Username</label>
+        {{ form.username }}
+      </div>
+      <div class="mb-4">
+        <label class="form-label text-secondary small">Password</label>
+        {{ form.password }}
+      </div>
+      {% if form.errors %}
+        <div class="alert alert-danger py-2 small">Invalid username or password.</div>
+      {% endif %}
+      <button type="submit" class="btn btn-cyber w-100 py-2 fw-semibold">
+        <i class="fas fa-sign-in-alt me-2"></i>Login
+      </button>
+    </form>
+    <p class="text-center text-secondary small mt-3 mb-0">
+        Don't have an account?
+        <a href="{% url 'accounts:register' %}" class="text-cyan text-decoration-none">Register here</a>
+      </p>
+  </div>
+</div>
+{% endblock %}

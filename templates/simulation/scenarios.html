@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Simulation{% endblock %}
+
+{% block content %}
+<h1 class="page-title"><i class="fas fa-flask me-2 text-cyan"></i>Attack Simulation Testbed</h1>
+
+<div class="row g-3 mb-4">
+  {% for s in scenarios %}
+  <div class="col-md-6">
+    <div class="card p-3">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h5 class="text-white fw-semibold mb-1">{{ s.name }}</h5>
+          <p class="text-secondary small mb-2">{{ s.description }}</p>
+          <span class="badge" style="background:{% if s.attack_type == 'dos' %}#c0392b{% elif s.attack_type == 'fdi' %}#d35400{% elif s.attack_type == 'cmd_manip' %}#8e44ad{% else %}#1a6b4a{% endif %}">{{ s.attack_type|upper }}</span>
+        </div>
+        <a href="{% url 'simulation:run' s.pk %}" class="btn btn-cyber btn-sm ms-3">
+          <i class="fas fa-play me-1"></i>Run
+        </a>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12"><p class="text-secondary">No scenarios. Load them via Django shell (see guide Step 15.5).</p></div>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between">
+    <span class="text-white fw-semibold">Recent Simulation Runs</span>
+    <a href="{% url 'simulation:results' %}" class="btn btn-cyber btn-sm">View All Results</a>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-dark-custom table-hover mb-0">
+      <thead><tr><th>Scenario</th><th>Status</th><th>Voltage Impact</th><th>Power Impact</th><th>Detection (ms)</th><th>Run At</th></tr></thead>
+      <tbody>
+        {% for r in runs %}
+        <tr>
+          <td class="text-cyan">{{ r.scenario.name }}</td>
+          <td><span class="badge bg-success">{{ r.status|title }}</span></td>
+          <td class="{% if r.voltage_impact < 0 %}text-danger{% else %}text-warning{% endif %}">{{ r.voltage_impact|floatformat:2 }}%</td>
+          <td class="{% if r.power_impact < 0 %}text-danger{% else %}text-warning{% endif %}">{{ r.power_impact|floatformat:2 }}%</td>
+          <td>{{ r.detection_time_ms }} ms</td>
+          <td class="text-secondary small">{{ r.started_at|date:"M d, H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-secondary py-3">No runs yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

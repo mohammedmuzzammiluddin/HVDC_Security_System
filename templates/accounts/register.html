@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Register — HVDC CyberSec{% endblock %}
+
+{% block content_unauth %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center py-5" style="background: linear-gradient(135deg, #0a1628 0%, #112240 100%);">
+  <div class="card p-4 shadow-lg" style="width: 520px; border: 1px solid #1e3a5f; border-radius: 16px;">
+
+    <div class="text-center mb-4">
+      <i class="fas fa-bolt fa-3x text-cyan mb-3"></i>
+      <h3 class="fw-bold text-white">Create Account</h3>
+      <p class="text-secondary small">HVDC Cyber-Physical Security Platform</p>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="row g-3">
+        <div class="col-6">
+          <label class="form-label text-secondary small">First Name</label>
+          {{ form.first_name }}
+        </div>
+        <div class="col-6">
+          <label class="form-label text-secondary small">Last Name</label>
+          {{ form.last_name }}
+        </div>
+        <div class="col-12">
+          <label class="form-label text-secondary small">Username <span class="text-danger">*</span></label>
+          {{ form.username }}
+          {% if form.username.errors %}
+            <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+          {% endif %}
+        </div>
+        <div class="col-12">
+          <label class="form-label text-secondary small">Email Address</label>
+          {{ form.email }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label text-secondary small">Phone</label>
+          {{ form.phone }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label text-secondary small">Department</label>
+          {{ form.department }}
+        </div>
+        <div class="col-12">
+          <label class="form-label text-secondary small">Role</label>
+          {{ form.role }}
+        </div>
+        <div class="col-12">
+          <label class="form-label text-secondary small">Password <span class="text-danger">*</span></label>
+          {{ form.password1 }}
+          {% if form.password1.errors %}
+            <div class="text-danger small mt-1">{{ form.password1.errors.0 }}</div>
+          {% endif %}
+        </div>
+        <div class="col-12">
+          <label class="form-label text-secondary small">Confirm Password <span class="text-danger">*</span></label>
+          {{ form.password2 }}
+          {% if form.password2.errors %}
+            <div class="text-danger small mt-1">{{ form.password2.errors.0 }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger py-2 small mt-3">{{ form.non_field_errors.0 }}</div>
+      {% endif %}
+
+      <button type="submit" class="btn btn-cyber w-100 py-2 fw-semibold mt-4">
+        <i class="fas fa-user-plus me-2"></i>Create Account
+      </button>
+
+      <p class="text-center text-secondary small mt-3 mb-0">
+        Already have an account?
+        <a href="{% url 'accounts:login' %}" class="text-cyan text-decoration-none">Login here</a>
+      </p>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

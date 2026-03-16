@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Defense & Mitigation{% endblock %}
+
+{% block content %}
+<h1 class="page-title"><i class="fas fa-lock me-2 text-cyan"></i>Defense & Mitigation</h1>
+
+<!-- Quick Mitigation Actions -->
+<div class="card mb-4">
+  <div class="card-header"><span class="text-white fw-semibold">Quick Mitigation Actions</span></div>
+  <div class="card-body d-flex flex-wrap gap-2">
+    <a href="{% url 'defense:mitigate' 'block_suspicious_ip' %}" class="btn btn-danger btn-sm"><i class="fas fa-ban me-1"></i>Block Suspicious IPs</a>
+    <a href="{% url 'defense:mitigate' 'enable_dos_protection' %}" class="btn btn-warning btn-sm text-dark"><i class="fas fa-shield-alt me-1"></i>Enable DoS Protection</a>
+    <a href="{% url 'defense:mitigate' 'rotate_encryption_keys' %}" class="btn btn-cyber btn-sm"><i class="fas fa-key me-1"></i>Rotate Encryption Keys</a>
+    <a href="{% url 'defense:mitigate' 'reset_firewall_rules' %}" class="btn btn-outline-light btn-sm"><i class="fas fa-fire me-1"></i>Reset Firewall Rules</a>
+  </div>
+</div>
+
+<!-- Security Policies -->
+<div class="card mb-4">
+  <div class="card-header"><span class="text-white fw-semibold">Security Policies</span></div>
+  <div class="card-body p-0">
+    <table class="table table-dark-custom table-hover mb-0">
+      <thead><tr><th>Name</th><th>Type</th><th>Status</th><th>Created</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for p in policies %}
+        <tr>
+          <td class="text-white">{{ p.name }}</td>
+          <td><span class="badge bg-secondary">{{ p.get_policy_type_display }}</span></td>
+          <td>{% if p.is_enabled %}<span class="badge bg-success">Enabled</span>{% else %}<span class="badge bg-danger">Disabled</span>{% endif %}</td>
+          <td class="text-secondary small">{{ p.created_at|date:"M d Y" }}</td>
+          <td>
+            {% if request.user.is_admin %}
+            <a href="{% url 'defense:toggle_policy' p.pk %}" class="btn btn-sm {% if p.is_enabled %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+              {% if p.is_enabled %}Disable{% else %}Enable{% endif %}
+            </a>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-secondary py-4">No security policies configured.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Recent Mitigation Actions -->
+<div class="card">
+  <div class="card-header"><span class="text-white fw-semibold">Recent Mitigation Actions</span></div>
+  <div class="card-body p-0">
+    <table class="table table-dark-custom mb-0">
+      <thead><tr><th>Action</th><th>Triggered By</th><th>Status</th><th>Result</th><th>Time</th></tr></thead>
+      <tbody>
+        {% for a in recent_actions %}
+        <tr>
+          <td class="text-white">{{ a.action_name }}</td>
+          <td class="text-secondary small">{{ a.triggered_by }}</td>
+          <td><span class="badge {% if a.status == 'executed' %}bg-success{% elif a.status == 'failed' %}bg-danger{% else %}bg-warning text-dark{% endif %}">{{ a.status }}</span></td>
+          <td class="text-secondary small">{{ a.result|truncatechars:50 }}</td>
+          <td class="text-secondary small">{{ a.executed_at|date:"M d, H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-secondary py-3">No actions executed yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

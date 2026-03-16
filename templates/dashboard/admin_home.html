@@ -1,0 +1,342 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="page-title mb-0">
+      <i class="fas fa-user-shield me-2 text-cyan"></i>Admin Control Center
+    </h1>
+    <p class="text-secondary small mb-0 mt-1">Welcome back, {{ request.user.get_full_name|default:request.user.username }} &mdash; Full system access</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'threat_detection:run_detection' %}" class="btn btn-cyber btn-sm">
+      <i class="fas fa-search me-1"></i>Run Detection
+    </a>
+    <a href="/admin/" class="btn btn-outline-light btn-sm">
+      <i class="fas fa-cog me-1"></i>Django Admin
+    </a>
+  </div>
+</div>
+
+<!-- Top KPI Row -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="stat-card" style="border-left: 3px solid #e74c3c;">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <p class="text-secondary small mb-1">Critical Threats</p>
+          <h2 class="fw-bold text-danger">{{ critical_threats }}</h2>
+          <small class="text-secondary">{{ threats_24h }} in last 24h</small>
+        </div>
+        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(231,76,60,0.15);">
+          <i class="fas fa-skull-crossbones text-danger"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card" style="border-left: 3px solid #f59e0b;">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <p class="text-secondary small mb-1">Active Alerts</p>
+          <h2 class="fw-bold text-warning">{{ active_alerts }}</h2>
+          <small class="text-secondary">{{ critical_alerts }} critical</small>
+        </div>
+        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(245,158,11,0.15);">
+          <i class="fas fa-bell text-warning"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card" style="border-left: 3px solid #00b4d8;">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <p class="text-secondary small mb-1">Total Users</p>
+          <h2 class="fw-bold text-cyan">{{ total_users }}</h2>
+          <small class="text-secondary">{{ analyst_count }} analysts · {{ viewer_count }} viewers</small>
+        </div>
+        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(0,180,216,0.15);">
+          <i class="fas fa-users text-cyan"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card" style="border-left: 3px solid #e74c3c;">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <p class="text-secondary small mb-1">Open Vulnerabilities</p>
+          <h2 class="fw-bold text-white">{{ open_vulns }}</h2>
+          <small class="text-danger">{{ critical_vulns }} critical</small>
+        </div>
+        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(231,76,60,0.15);">
+          <i class="fas fa-bug text-danger"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HVDC Live Reading Banner -->
+{% if latest_reading %}
+<div class="card mb-4" style="background: linear-gradient(135deg, #0d1b2a, #112240); border: 1px solid #00b4d8;">
+  <div class="card-body py-3">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <span class="online-dot"></span>
+        <span class="text-cyan fw-semibold small">LIVE HVDC READING</span>
+        <span class="text-secondary small">{{ latest_reading.timestamp|date:"M d, H:i:s" }}</span>
+      </div>
+      <div class="d-flex gap-4 flex-wrap">
+        <div class="text-center">
+          <div class="text-white fw-bold">{{ latest_reading.dc_voltage|floatformat:1 }} <small class="text-secondary">kV</small></div>
+          <div class="text-secondary" style="font-size:0.7rem;">DC Voltage</div>
+        </div>
+        <div class="text-center">
+          <div class="text-white fw-bold">{{ latest_reading.dc_current|floatformat:3 }} <small class="text-secondary">kA</small></div>
+          <div class="text-secondary" style="font-size:0.7rem;">DC Current</div>
+        </div>
+        <div class="text-center">
+          <div class="text-white fw-bold">{{ latest_reading.active_power|floatformat:0 }} <small class="text-secondary">MW</small></div>
+          <div class="text-secondary" style="font-size:0.7rem;">Active Power</div>
+        </div>
+        <div class="text-center">
+          <div class="text-white fw-bold">{{ latest_reading.network_packet_rate }} <small class="text-secondary">pkt/s</small></div>
+          <div class="text-secondary" style="font-size:0.7rem;">Packet Rate</div>
+        </div>
+        <div class="text-center">
+          <div class="fw-bold {% if latest_reading.converter_status == 'normal' %}text-success{% elif latest_reading.converter_status == 'warning' %}text-warning{% else %}text-danger{% endif %}">
+            {{ latest_reading.converter_status|upper }}
+          </div>
+          <div class="text-secondary" style="font-size:0.7rem;">Converter</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Middle Row: Charts + User Management -->
+<div class="row g-3 mb-4">
+
+  <!-- Threat breakdown chart -->
+  <div class="col-md-5">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="text-white fw-semibold">Threat Breakdown (7 days)</span>
+        <a href="{% url 'threat_detection:dashboard' %}" class="text-cyan small text-decoration-none">View all →</a>
+      </div>
+      <div class="card-body">
+        <canvas id="threatChart" height="200"></canvas>
+        <div class="row g-2 mt-3">
+          <div class="col-6"><div class="d-flex align-items-center gap-2"><span style="width:12px;height:12px;border-radius:2px;background:#e74c3c;display:inline-block;"></span><small class="text-secondary">DoS: {{ threat_type_counts.dos }}</small></div></div>
+          <div class="col-6"><div class="d-flex align-items-center gap-2"><span style="width:12px;height:12px;border-radius:2px;background:#f59e0b;display:inline-block;"></span><small class="text-secondary">FDI: {{ threat_type_counts.fdi }}</small></div></div>
+          <div class="col-6"><div class="d-flex align-items-center gap-2"><span style="width:12px;height:12px;border-radius:2px;background:#a855f7;display:inline-block;"></span><small class="text-secondary">Cmd: {{ threat_type_counts.cmd }}</small></div></div>
+          <div class="col-6"><div class="d-flex align-items-center gap-2"><span style="width:12px;height:12px;border-radius:2px;background:#27ae60;display:inline-block;"></span><small class="text-secondary">Normal: {{ threat_type_counts.normal }}</small></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Model Status -->
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-header">
+        <span class="text-white fw-semibold">AI Model Status</span>
+      </div>
+      <div class="card-body">
+        {% if active_model %}
+        <div class="text-center mb-3">
+          <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center mb-2" style="width:60px;height:60px;background:rgba(0,180,216,0.15);border:2px solid #00b4d8;">
+            <i class="fas fa-brain text-cyan fa-lg"></i>
+          </div>
+          <div class="text-white fw-semibold">{{ active_model.name }}</div>
+          <div class="text-secondary small">v{{ active_model.version }}</div>
+        </div>
+        <div class="mb-2">
+          <div class="d-flex justify-content-between mb-1">
+            <small class="text-secondary">Accuracy</small>
+            <small class="text-cyan">{{ active_model.accuracy|floatformat:1 }}%</small>
+          </div>
+          <div class="progress" style="height:5px;background:#1e3a5f;">
+            <div class="progress-bar" style="width:{{ active_model.accuracy }}%;background:#00b4d8;"></div>
+          </div>
+        </div>
+        <div class="mb-2">
+          <div class="d-flex justify-content-between mb-1">
+            <small class="text-secondary">F1 Score</small>
+            <small class="text-cyan">{{ active_model.f1_score|floatformat:2 }}</small>
+          </div>
+          <div class="progress" style="height:5px;background:#1e3a5f;">
+            <div class="progress-bar" style="width:{{ active_model.f1_score|floatformat:0 }}0%;background:#10b981;"></div>
+          </div>
+        </div>
+        <div class="text-center mt-3">
+          <span class="badge bg-success px-3">Active</span>
+        </div>
+        {% else %}
+        <div class="text-center py-3">
+          <i class="fas fa-exclamation-triangle text-warning fa-2x mb-2"></i>
+          <p class="text-secondary small">No active model. Train and activate a model.</p>
+          <small class="text-secondary">Run: python ml_models/train_model.py</small>
+        </div>
+        {% endif %}
+        <div class="mt-2 text-center">
+          <small class="text-secondary">{{ total_models }} model(s) total</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-header">
+        <span class="text-white fw-semibold">Admin Quick Actions</span>
+      </div>
+      <div class="card-body d-flex flex-column gap-2">
+        <a href="{% url 'accounts:user_list' %}" class="btn btn-outline-light text-start btn-sm py-2">
+          <i class="fas fa-users me-2 text-cyan"></i>Manage Users
+        </a>
+        <a href="{% url 'threat_detection:run_detection' %}" class="btn btn-outline-light text-start btn-sm py-2">
+          <i class="fas fa-search me-2 text-cyan"></i>Run AI Detection
+        </a>
+        <a href="{% url 'vulnerability:list' %}" class="btn btn-outline-light text-start btn-sm py-2">
+          <i class="fas fa-bug me-2 text-warning"></i>Vulnerability Scan
+        </a>
+        <a href="{% url 'defense:dashboard' %}" class="btn btn-outline-light text-start btn-sm py-2">
+          <i class="fas fa-lock me-2 text-success"></i>Defense Controls
+        </a>
+        <a href="{% url 'reports:pdf' %}" class="btn btn-outline-light text-start btn-sm py-2">
+          <i class="fas fa-file-pdf me-2 text-danger"></i>Download PDF Report
+        </a>
+        <a href="{% url 'simulation:scenarios' %}" class="btn btn-outline-light text-start btn-sm py-2">
+          <i class="fas fa-flask me-2 text-purple"></i>Attack Simulation
+        </a>
+        <a href="/admin/" class="btn btn-outline-light text-start btn-sm py-2">
+          <i class="fas fa-tools me-2 text-secondary"></i>Django Admin Panel
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Row: Recent Threats + Users + Mitigations -->
+<div class="row g-3">
+
+  <!-- Recent Threats -->
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="text-white fw-semibold">Recent Threats</span>
+        <a href="{% url 'threat_detection:dashboard' %}" class="text-cyan small text-decoration-none">View all →</a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-dark-custom table-hover mb-0">
+          <thead><tr><th>Type</th><th>Severity</th><th>Confidence</th><th>Time</th></tr></thead>
+          <tbody>
+            {% for t in recent_threats %}
+            <tr>
+              <td>
+                <span class="badge" style="background:{% if t.attack_type == 'dos' %}#c0392b{% elif t.attack_type == 'fdi' %}#d35400{% elif t.attack_type == 'cmd_manip' %}#8e44ad{% else %}#27ae60{% endif %}; font-size:0.7rem;">
+                  {{ t.get_attack_type_display }}
+                </span>
+              </td>
+              <td><span class="severity-{{ t.severity }}" style="font-size:0.75rem;">{{ t.severity|upper }}</span></td>
+              <td><small class="text-cyan">{{ t.confidence_score|floatformat:2 }}</small></td>
+              <td><small class="text-secondary">{{ t.detected_at|date:"M d, H:i" }}</small></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center text-secondary py-3 small">No threats detected yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Users + Mitigations -->
+  <div class="col-md-6">
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="text-white fw-semibold">Recent Users</span>
+        <a href="{% url 'accounts:user_list' %}" class="text-cyan small text-decoration-none">Manage →</a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-dark-custom mb-0">
+          <thead><tr><th>Username</th><th>Role</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for u in recent_users %}
+            <tr>
+              <td class="text-white small">{{ u.username }}</td>
+              <td><span class="badge bg-secondary" style="font-size:0.7rem;">{{ u.get_role_display }}</span></td>
+              <td>{% if u.is_active %}<span class="badge bg-success" style="font-size:0.7rem;">Active</span>{% else %}<span class="badge bg-danger" style="font-size:0.7rem;">Inactive</span>{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center text-secondary py-2 small">No users yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="text-white fw-semibold">Recent Mitigations</span>
+        <a href="{% url 'defense:dashboard' %}" class="text-cyan small text-decoration-none">All →</a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-dark-custom mb-0">
+          <thead><tr><th>Action</th><th>Status</th><th>Time</th></tr></thead>
+          <tbody>
+            {% for m in recent_mitigations %}
+            <tr>
+              <td class="text-white small">{{ m.action_name }}</td>
+              <td><span class="badge {% if m.status == 'executed' %}bg-success{% else %}bg-danger{% endif %}" style="font-size:0.7rem;">{{ m.status }}</span></td>
+              <td><small class="text-secondary">{{ m.executed_at|date:"M d, H:i" }}</small></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center text-secondary py-2 small">No actions yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+new Chart(document.getElementById('threatChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['DoS', 'FDI', 'Cmd Manip', 'Replay', 'Normal'],
+    datasets: [{
+      data: [
+        {{ threat_type_counts.dos }},
+        {{ threat_type_counts.fdi }},
+        {{ threat_type_counts.cmd }},
+        {{ threat_type_counts.replay }},
+        {{ threat_type_counts.normal }}
+      ],
+      backgroundColor: ['#c0392b','#f59e0b','#8e44ad','#2980b9','#27ae60'],
+      borderWidth: 0,
+      hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true,
+    cutout: '70%',
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed}` } }
+    }
+  }
+});
+</script>
+{% endblock %}
