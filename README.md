@@ -7,7 +7,7 @@
 | Zuhaib Mohammed Abdul Waheed | 160922748160 |
 
 **Project Guide:**
-Associate Professor
+Mazher Uddin Associate Professor
 
 **Co-Guide / HoD:**
 Dr. Abdul Rasool Mohammed
