@@ -1,3 +1,15 @@
+🔗👨‍💻Team
+| Name                        |    Roll Number                         |
+|-----------------------------|----------------------------------------|
+| Mohammed Muzzammil Uddin    | 160922748121                           |
+| Syed Moosa                  | 160922748166                           |
+| Zuhaib Mohammed Abdul Waheed| 160922748160                           |
+
+Project Guide: 
+Associate Professor
+Co-Guide / HoD: Dr. Abdul Rasool Mohammed, Associate Professor & Head of Department, CSE(AIML)
+Institution: Lords Institute of Engineering and Technology, Hyderabad 
+
 # HVDC CyberSec — Cyber-Physical Security Monitoring Platform
 
 ## Tech Stack
@@ -627,10 +639,3 @@ python manage.py runserver
 | Dashboard showing empty     | Run sample data shell script (Step 8)         |
 | Reports not showing         | Check reports/views.py uses all() not filter()|
 | ImportError in admin.py     | Fix wrong model imports in that app's admin.py|
-
-Team
-| Name                        |    Roll Number                         |
-|-----------------------------|----------------------------------------|
-| Mohammed Muzzammil Uddin    | 160922748121                           |
-| Syed Mosa                   | 160922748166                           |
-| Mohammed Zuhaib             | 160922748160                           |
